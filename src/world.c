@@ -8,6 +8,11 @@ void world_init(World *w, Vec2 gravity, float dt) {
     w->gravity = gravity;
     w->dt = dt;
     w->bounds_enabled = 0;
+    
+    // Default debug flags (all off)
+    w->debug.show_velocity = 0;
+    w->debug.show_contacts = 0;
+    w->debug.show_normals = 0;
 }
 
 void world_set_bounds(World *w, float left, float top, float right, float bottom) {
@@ -126,7 +131,7 @@ void world_step(World *w) {
 
 void world_render_debug(World *w, SDL_Renderer *r) {
     for (int i = 0; i < w->body_count; i++) {
-        render_body_debug(r, &w->bodies[i]);
+        render_body_debug(r, &w->bodies[i], w->debug.show_velocity);
     }
 }
 

@@ -15,6 +15,6 @@ void render_arrow(SDL_Renderer *r, int x, int y, float vx, float vy, SDL_Color c
 
 // Body rendering functions
 void render_body(SDL_Renderer *r, const Body *b);
-void render_body_debug(SDL_Renderer *r, const Body *b);  // Also draws velocity vector
+void render_body_debug(SDL_Renderer *r, const Body *b, int show_velocity);  // Also draws velocity vector
 
 #endif

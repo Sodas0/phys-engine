@@ -8,6 +8,13 @@
 #define MAX_COLLISIONS 512    // Worst case: n*(n-1)/2 for 256 bodies
 #define SOLVER_ITERATIONS 6   // Tune: 4-8 typical for stable stacking
 
+// Debug visualization flags
+typedef struct {
+    int show_velocity;         // Draw velocity vectors
+    int show_contacts;         // Draw contact points (future)
+    int show_normals;          // Draw collision normals (future)
+} DebugFlags;
+
 typedef struct {
     Body bodies[MAX_BODIES];
     int body_count;
@@ -20,6 +27,9 @@ typedef struct {
     float bound_top;
     float bound_bottom;
     int bounds_enabled;
+    
+    // Debug visualization settings
+    DebugFlags debug;
 } World;
 
 // Initialize world with gravity vector and fixed timestep
@@ -37,7 +47,7 @@ Body* world_get_body(World *w, int index);
 // Advance simulation by one timestep (integrates velocities and positions)
 void world_step(World *w);
 
-// Render all bodies with debug info (velocity vectors, centers)
+// Render all bodies with debug info based on w->debug flags
 void world_render_debug(World *w, SDL_Renderer *r);
 
 // --- Spawn Helpers (for testing/bulk creation) ---
