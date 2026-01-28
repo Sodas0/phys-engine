@@ -1,4 +1,5 @@
 #include "render.h"
+#include <math.h>
 
 void render_circle(SDL_Renderer *r, int cx, int cy, int radius, SDL_Color color) {
     SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
@@ -24,4 +25,65 @@ void render_circle(SDL_Renderer *r, int cx, int cy, int radius, SDL_Color color)
             err += 1 - 2 * x;
         }
     }
+}
+
+void render_circle_filled(SDL_Renderer *r, int cx, int cy, int radius, SDL_Color color) {
+    SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
+
+    int x = radius;
+    int y = 0;
+    int err = 0;
+
+    while (x >= y) {
+        SDL_RenderDrawLine(r, cx - x, cy + y, cx + x, cy + y);
+        SDL_RenderDrawLine(r, cx - x, cy - y, cx + x, cy - y);
+        SDL_RenderDrawLine(r, cx - y, cy + x, cx + y, cy + x);
+        SDL_RenderDrawLine(r, cx - y, cy - x, cx + y, cy - x);
+
+        y++;
+        err += 1 + 2 * y;
+        if (2 * (err - x) + 1 > 0) {
+            x--;
+            err += 1 - 2 * x;
+        }
+    }
+}
+
+void render_line(SDL_Renderer *r, int x1, int y1, int x2, int y2, SDL_Color color) {
+    SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
+    SDL_RenderDrawLine(r, x1, y1, x2, y2);
+}
+
+void render_point(SDL_Renderer *r, int x, int y, int size, SDL_Color color) {
+    SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
+    SDL_Rect rect = {x - size / 2, y - size / 2, size, size};
+    SDL_RenderFillRect(r, &rect);
+}
+
+void render_arrow(SDL_Renderer *r, int x, int y, float vx, float vy, SDL_Color color) {
+    SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
+
+    int ex = x + (int)vx;
+    int ey = y + (int)vy;
+
+    // Main line
+    SDL_RenderDrawLine(r, x, y, ex, ey);
+
+    // Arrowhead (two small lines)
+    float len = sqrtf(vx * vx + vy * vy);
+    if (len < 1.0f) return;
+
+    float nx = vx / len;
+    float ny = vy / len;
+    float px = -ny;
+    float py = nx;
+    float head = 8.0f;
+
+    int ax = ex - (int)(nx * head + px * head * 0.5f);
+    int ay = ey - (int)(ny * head + py * head * 0.5f);
+    int bx = ex - (int)(nx * head - px * head * 0.5f);
+    int by = ey - (int)(ny * head - py * head * 0.5f);
+
+    SDL_RenderDrawLine(r, ex, ey, ax, ay);
+    SDL_RenderDrawLine(r, ex, ey, bx, by);
 }

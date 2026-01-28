@@ -22,9 +22,16 @@ int main(int argc, char *argv[]) {
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
 
-        // Test circle
+        // Test shapes
         SDL_Color white = {255, 255, 255, 255};
-        render_circle(renderer, 400, 300, 50, white);
+        SDL_Color red = {255, 100, 100, 255};
+        SDL_Color green = {100, 255, 100, 255};
+        SDL_Color yellow = {255, 255, 100, 255};
+        render_circle(renderer, 300, 300, 50, white);
+        render_circle_filled(renderer, 500, 300, 50, red);
+        render_line(renderer, 100, 100, 700, 500, green);
+        render_point(renderer, 400, 450, 8, yellow);
+        render_arrow(renderer, 500, 300, 80, -60, white);
 
         SDL_RenderPresent(renderer);
     }
