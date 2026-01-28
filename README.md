@@ -8,7 +8,7 @@ My goal with this project is to use this as a very simple physics engine for ele
 
 ## Demo
 
-<video src="./readme-2dphysengine-demo.mp4" controls width="800"></video>
+https://github.com/user-attachments/assets/2fb8b3da-6529-48a6-90d7-17bd01d83c48
 
 ## Features
 
