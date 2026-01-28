@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -O2 $(shell sdl2-config --cflags)
 LDFLAGS = $(shell sdl2-config --libs)
 
 TARGET = phys-engine
-SRC = main.c
+SRC = main.c render.c
 
 $(TARGET): $(SRC)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
