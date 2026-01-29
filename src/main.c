@@ -2,7 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 #include "world.h"
+#include "render.h"
+
+#define PI 3.14159265358979323846f
 
 // Window dimensions
 #define WINDOW_WIDTH 600
@@ -73,6 +77,28 @@ int main(int argc, char *argv[]) {
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
         world_render_debug(&world, renderer);
+
+        // Test rectangles (temporary - for visualization testing)
+        static float test_angle = 0.0f;
+        test_angle += 0.02f;  // Rotate over time
+        if (test_angle > 2 * PI) test_angle -= 2 * PI;
+
+        SDL_Color blue = {100, 150, 255, 255};
+        SDL_Color orange = {255, 165, 0, 255};
+        SDL_Color purple = {180, 100, 255, 255};
+
+        // Axis-aligned rectangles
+        render_rect_filled(renderer, 300, 450, 120, 80, blue);
+        render_rect(renderer, 300, 450, 120, 80, (SDL_Color){255, 255, 255, 255});
+        render_rect(renderer, 100, 300, 60, 100, orange);
+
+        // Rotated rectangles (animated)
+        render_rect_rotated_filled(renderer, 480, 300, 100, 60, test_angle, purple);
+        render_rect_rotated(renderer, 480, 300, 100, 60, test_angle, (SDL_Color){255, 255, 255, 255});
+
+        // Static rotated rectangle at 45 degrees
+        render_rect_rotated(renderer, 150, 480, 80, 40, PI / 4.0f, orange);
+
         SDL_RenderPresent(renderer);
     }
 

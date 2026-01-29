@@ -50,6 +50,113 @@ void render_circle_filled(SDL_Renderer *r, int cx, int cy, int radius, SDL_Color
     }
 }
 
+void render_rect(SDL_Renderer *r, int cx, int cy, int width, int height, SDL_Color color) {
+    SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
+    SDL_Rect rect = {cx - width / 2, cy - height / 2, width, height};
+    SDL_RenderDrawRect(r, &rect);
+}
+
+void render_rect_filled(SDL_Renderer *r, int cx, int cy, int width, int height, SDL_Color color) {
+    SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
+    SDL_Rect rect = {cx - width / 2, cy - height / 2, width, height};
+    SDL_RenderFillRect(r, &rect);
+}
+
+// Helper: rotate a point (px, py) around origin by angle (radians)
+static void rotate_point(float px, float py, float angle, float *out_x, float *out_y) {
+    float c = cosf(angle);
+    float s = sinf(angle);
+    *out_x = px * c - py * s;
+    *out_y = px * s + py * c;
+}
+
+// Helper: get the 4 corners of a rotated rectangle (corners are output in order: TL, TR, BR, BL)
+static void get_rect_corners(float cx, float cy, float width, float height, float angle,
+                             float *x0, float *y0, float *x1, float *y1,
+                             float *x2, float *y2, float *x3, float *y3) {
+    float hw = width / 2.0f;
+    float hh = height / 2.0f;
+
+    // Local corners relative to center (before rotation)
+    float lx[4] = {-hw, hw, hw, -hw};
+    float ly[4] = {-hh, -hh, hh, hh};
+
+    // Rotate each corner and translate to world position
+    float rx, ry;
+    rotate_point(lx[0], ly[0], angle, &rx, &ry); *x0 = cx + rx; *y0 = cy + ry;
+    rotate_point(lx[1], ly[1], angle, &rx, &ry); *x1 = cx + rx; *y1 = cy + ry;
+    rotate_point(lx[2], ly[2], angle, &rx, &ry); *x2 = cx + rx; *y2 = cy + ry;
+    rotate_point(lx[3], ly[3], angle, &rx, &ry); *x3 = cx + rx; *y3 = cy + ry;
+}
+
+void render_rect_rotated(SDL_Renderer *r, float cx, float cy, float width, float height, float angle, SDL_Color color) {
+    SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
+
+    float x0, y0, x1, y1, x2, y2, x3, y3;
+    get_rect_corners(cx, cy, width, height, angle, &x0, &y0, &x1, &y1, &x2, &y2, &x3, &y3);
+
+    // Draw 4 edges
+    SDL_RenderDrawLine(r, (int)x0, (int)y0, (int)x1, (int)y1);
+    SDL_RenderDrawLine(r, (int)x1, (int)y1, (int)x2, (int)y2);
+    SDL_RenderDrawLine(r, (int)x2, (int)y2, (int)x3, (int)y3);
+    SDL_RenderDrawLine(r, (int)x3, (int)y3, (int)x0, (int)y0);
+}
+
+void render_rect_rotated_filled(SDL_Renderer *r, float cx, float cy, float width, float height, float angle, SDL_Color color) {
+    SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
+
+    float x0, y0, x1, y1, x2, y2, x3, y3;
+    get_rect_corners(cx, cy, width, height, angle, &x0, &y0, &x1, &y1, &x2, &y2, &x3, &y3);
+
+    // Put corners into arrays for easier processing
+    float vx[4] = {x0, x1, x2, x3};
+    float vy[4] = {y0, y1, y2, y3};
+
+    // Find bounding box
+    float min_y = vy[0], max_y = vy[0];
+    for (int i = 1; i < 4; i++) {
+        if (vy[i] < min_y) min_y = vy[i];
+        if (vy[i] > max_y) max_y = vy[i];
+    }
+
+    // Scanline fill: for each row, find intersection with polygon edges
+    for (int y = (int)min_y; y <= (int)max_y; y++) {
+        float x_intersections[4];
+        int num_intersections = 0;
+
+        // Check each edge for intersection with this scanline
+        for (int i = 0; i < 4; i++) {
+            int j = (i + 1) % 4;
+            float y1_edge = vy[i];
+            float y2_edge = vy[j];
+
+            // Check if scanline crosses this edge
+            if ((y1_edge <= y && y2_edge > y) || (y2_edge <= y && y1_edge > y)) {
+                // Calculate x intersection using linear interpolation
+                float t = (y - y1_edge) / (y2_edge - y1_edge);
+                float x_int = vx[i] + t * (vx[j] - vx[i]);
+                x_intersections[num_intersections++] = x_int;
+            }
+        }
+
+        // Sort intersections (simple bubble sort for 2 elements typically)
+        for (int i = 0; i < num_intersections - 1; i++) {
+            for (int j = i + 1; j < num_intersections; j++) {
+                if (x_intersections[i] > x_intersections[j]) {
+                    float temp = x_intersections[i];
+                    x_intersections[i] = x_intersections[j];
+                    x_intersections[j] = temp;
+                }
+            }
+        }
+
+        // Draw horizontal lines between pairs of intersections
+        for (int i = 0; i + 1 < num_intersections; i += 2) {
+            SDL_RenderDrawLine(r, (int)x_intersections[i], y, (int)x_intersections[i + 1], y);
+        }
+    }
+}
+
 void render_line(SDL_Renderer *r, int x1, int y1, int x2, int y2, SDL_Color color) {
     SDL_SetRenderDrawColor(r, color.r, color.g, color.b, color.a);
     SDL_RenderDrawLine(r, x1, y1, x2, y2);
