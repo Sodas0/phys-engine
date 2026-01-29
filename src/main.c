@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     // === Initialize physics world ===
     World world;
     //TODO: make gravity in m/s^2, and not pixels/frame
-    world_init(&world, vec2(0, 200.0f), 1.0f / 60.0f);  // Stronger gravity for fun
+    world_init(&world, vec2(0, 98.1f), 1.0f / 60.0f);  // Stronger gravity for fun
     world_set_bounds(&world, 0.0f, 0.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
     
     // Configure debug visualization
@@ -39,20 +39,63 @@ int main(int argc, char *argv[]) {
     // === Add bodies using body_default() ===
     // Pattern: create with defaults, modify what you need, then add
     Body b;
+    // === Simple circle-rect collision test ===
 
-    // Big red ball
-    b = body_default(vec2(400, 100), 60.0f);
+    // Static rectangle platform at the bottom
+    b = body_create_static_rect(vec2(300, 500), 400.0f, 40.0f);
+    b.color = (SDL_Color){100, 100, 100, 255};
+    world_add_body(&world, b);
+
+    // Circle that falls onto the platform
+    b = body_default(vec2(300, 100), 30.0f);
     b.color = (SDL_Color){255, 100, 100, 255};
-    b.restitution = 1.0f;
+    b.restitution = 0.8f;
     world_add_body(&world, b);
 
-    // Green ball moving right
-    b = body_default(vec2(200, 50), 30.0f);
-    b.velocity = vec2(100, 0);
+    // Another circle offset to test corner collision
+    b = body_default(vec2(150, 150), 25.0f);
     b.color = (SDL_Color){100, 255, 100, 255};
-    b.restitution = 1.0f;
+    b.velocity = vec2(50, 0);  // Moving right
     world_add_body(&world, b);
 
+    /* old scene
+    // // Big red ball
+    // b = body_default(vec2(400, 100), 60.0f);
+    // b.color = (SDL_Color){255, 100, 100, 255};
+    // b.restitution = 1.0f;
+    // world_add_body(&world, b);
+
+    // // Green ball moving right
+    // b = body_default(vec2(200, 50), 30.0f);
+    // b.velocity = vec2(100, 0);
+    // b.color = (SDL_Color){100, 255, 100, 255};
+    // b.restitution = 1.0f;
+    // world_add_body(&world, b);
+
+    // // === Rectangle bodies ===
+    
+    // // Blue rectangle (falling)
+    // b = body_default_rect(vec2(300, 200), 120.0f, 80.0f);
+    // b.color = (SDL_Color){100, 150, 255, 255};
+    // b.restitution = 0.6f;
+    // world_add_body(&world, b);
+
+    // // Purple spinning rectangle
+    // b = body_default_rect(vec2(480, 150), 100.0f, 60.0f);
+    // b.color = (SDL_Color){180, 100, 255, 255};
+    // b.angular_velocity = 2.0f;  // Spinning!
+    // b.restitution = 0.8f;
+    // world_add_body(&world, b);
+
+    // // Orange rectangle at 45 degrees (starts tilted)
+    // b = body_default_rect(vec2(150, 300), 80.0f, 40.0f);
+    // b.color = (SDL_Color){255, 165, 0, 255};
+    // b.angle = PI / 4.0f;
+    // b.angular_velocity = -1.0f;  // Spinning the other way
+    // world_add_body(&world, b);
+   
+   end old scene */
+   
     // Bulk spawn for stress testing
     // world_spawn_random(&world, 69,
     //     50, 50,                              // min x, y (margin for radius)
@@ -77,27 +120,6 @@ int main(int argc, char *argv[]) {
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
         world_render_debug(&world, renderer);
-
-        // Test rectangles (temporary - for visualization testing)
-        static float test_angle = 0.0f;
-        test_angle += 0.02f;  // Rotate over time
-        if (test_angle > 2 * PI) test_angle -= 2 * PI;
-
-        SDL_Color blue = {100, 150, 255, 255};
-        SDL_Color orange = {255, 165, 0, 255};
-        SDL_Color purple = {180, 100, 255, 255};
-
-        // Axis-aligned rectangles
-        render_rect_filled(renderer, 300, 450, 120, 80, blue);
-        render_rect(renderer, 300, 450, 120, 80, (SDL_Color){255, 255, 255, 255});
-        render_rect(renderer, 100, 300, 60, 100, orange);
-
-        // Rotated rectangles (animated)
-        render_rect_rotated_filled(renderer, 480, 300, 100, 60, test_angle, purple);
-        render_rect_rotated(renderer, 480, 300, 100, 60, test_angle, (SDL_Color){255, 255, 255, 255});
-
-        // Static rotated rectangle at 45 degrees
-        render_rect_rotated(renderer, 150, 480, 80, 40, PI / 4.0f, orange);
 
         SDL_RenderPresent(renderer);
     }

@@ -60,7 +60,7 @@ int collision_detect_circles(const Body *a, const Body *b, Collision *out) {
     
     // Distance squared between centers
     float dist_sq = vec2_len_sq(ab);
-    float radius_sum = a->radius + b->radius;
+    float radius_sum = a->shape.circle.radius + b->shape.circle.radius;
     
     // Check if circles are overlapping
     if (dist_sq >= radius_sum * radius_sum) {
@@ -79,7 +79,93 @@ int collision_detect_circles(const Body *a, const Body *b, Collision *out) {
         out->normal = vec2_scale(ab, 1.0f / dist);
         out->penetration = radius_sum - dist;
         // Contact point: on the surface of A, offset toward B
-        out->contact = vec2_add(a->position, vec2_scale(out->normal, a->radius - out->penetration * 0.5f));
+        out->contact = vec2_add(a->position, vec2_scale(out->normal, a->shape.circle.radius - out->penetration * 0.5f));
+    }
+    
+    // body_a and body_b indices are set by the caller
+    out->body_a = -1;
+    out->body_b = -1;
+    
+    return 1;  // Collision detected
+}
+
+int collision_detect_circle_rect(const Body *circle, const Body *rect, Collision *out) {
+    float radius = circle->shape.circle.radius;
+    
+    // Compute rectangle half-extents and bounds
+    float half_w = rect->shape.rect.width * 0.5f;
+    float half_h = rect->shape.rect.height * 0.5f;
+    
+    float rect_min_x = rect->position.x - half_w;
+    float rect_max_x = rect->position.x + half_w;
+    float rect_min_y = rect->position.y - half_h;
+    float rect_max_y = rect->position.y + half_h;
+    
+    // Clamp circle center to rectangle bounds to find closest point
+    float closest_x = fmaxf(rect_min_x, fminf(circle->position.x, rect_max_x));
+    float closest_y = fmaxf(rect_min_y, fminf(circle->position.y, rect_max_y));
+    Vec2 closest = vec2(closest_x, closest_y);
+    
+    // Vector from closest point to circle center
+    Vec2 diff = vec2_sub(circle->position, closest);
+    float dist_sq = vec2_len_sq(diff);
+    
+    // Check if circle center is inside the rectangle
+    int inside = (circle->position.x >= rect_min_x && circle->position.x <= rect_max_x &&
+                  circle->position.y >= rect_min_y && circle->position.y <= rect_max_y);
+    
+    if (!inside) {
+        // Circle center is outside rectangle
+        if (dist_sq >= radius * radius) {
+            return 0;  // No collision
+        }
+        
+        float dist = sqrtf(dist_sq);
+        
+        // Handle edge case: closest point is exactly at circle center (shouldn't happen if outside)
+        if (dist < 1e-8f) {
+            out->normal = vec2(1.0f, 0.0f);  // Arbitrary direction
+            out->penetration = radius;
+        } else {
+            // Normal points from circle (A) toward rect (B)
+            // diff points from rect toward circle, so negate it
+            out->normal = vec2_scale(diff, -1.0f / dist);
+            out->penetration = radius - dist;
+        }
+        out->contact = closest;
+    } else {
+        // Circle center is inside rectangle - find closest edge
+        float dx_left = circle->position.x - rect_min_x;
+        float dx_right = rect_max_x - circle->position.x;
+        float dy_top = circle->position.y - rect_min_y;
+        float dy_bottom = rect_max_y - circle->position.y;
+        
+        // Find minimum distance to edge
+        // Normal points from circle toward rect interior (opposite of escape direction)
+        // This way, -normal pushes circle OUT toward the nearest edge
+        float min_dist = dx_left;
+        out->normal = vec2(1.0f, 0.0f);   // Escape left, normal points right
+        closest = vec2(rect_min_x, circle->position.y);
+        
+        if (dx_right < min_dist) {
+            min_dist = dx_right;
+            out->normal = vec2(-1.0f, 0.0f);  // Escape right, normal points left
+            closest = vec2(rect_max_x, circle->position.y);
+        }
+        if (dy_top < min_dist) {
+            min_dist = dy_top;
+            out->normal = vec2(0.0f, 1.0f);   // Escape up, normal points down
+            closest = vec2(circle->position.x, rect_min_y);
+        }
+        if (dy_bottom < min_dist) {
+            min_dist = dy_bottom;
+            out->normal = vec2(0.0f, -1.0f);  // Escape down, normal points up
+            closest = vec2(circle->position.x, rect_max_y);
+        }
+        
+        // Penetration is radius + distance to edge (since center is inside)
+        out->penetration = radius + min_dist;
+        out->contact = closest;
     }
     
     // body_a and body_b indices are set by the caller

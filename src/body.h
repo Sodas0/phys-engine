@@ -4,27 +4,71 @@
 #include "vec2.h"
 #include <SDL.h>
 
+// Shape type enum
+typedef enum {
+    SHAPE_CIRCLE,
+    SHAPE_RECT
+} ShapeType;
+
+typedef struct {
+    ShapeType type;
+    union{
+        struct{
+            float radius;
+        } circle;
+
+        struct{
+            float width;
+            float height;
+        } rect;
+    };
+} Shape;
+
 typedef struct Body {
-    Vec2 position;       // Center position
-    Vec2 velocity;       // Linear velocity
-    float radius;        // Circle radius
-    float mass;          // Mass (kg)
-    float inv_mass;      // 1/mass (0 = static/immovable)
-    float restitution;   // Bounciness [0-1]
-    SDL_Color color;     // For rendering
+    Vec2 position;
+    Vec2 velocity;
+
+    float mass;
+    float inv_mass;
+    float restitution;
+
+    float angle;
+    float angular_velocity;
+    float inv_inertia;
+
+    Shape shape;
+
+    SDL_Color color;
 } Body;
 
-// Create a dynamic body with given properties (full control)
-Body body_create(Vec2 pos, float radius, float mass, float restitution);
 
-// Create a body with sensible defaults (mass=1, restitution=0.8, white color)
+// === Circle constructors ===
+
+// Create a dynamic circle body with given properties (full control)
+Body body_create_circle(Vec2 pos, float radius, float mass, float restitution);
+
+// Create a circle body with sensible defaults (mass=1, restitution=0.8, white color)
 // This is the preferred constructor for most use cases
 Body body_default(Vec2 pos, float radius);
 
-// Create a static (immovable) body
+// Create a static (immovable) circle body
 Body body_create_static(Vec2 pos, float radius);
 
-// Make an existing body static (sets inv_mass = 0)
+// === Rectangle constructors ===
+
+// Create a dynamic rectangle body with given properties (full control)
+// Computes moment of inertia: I = (1/12) * mass * (width^2 + height^2)
+Body body_create_rect(Vec2 pos, float width, float height, float mass, float restitution);
+
+// Create a rectangle body with sensible defaults (mass=1, restitution=0.8, white color)
+Body body_default_rect(Vec2 pos, float width, float height);
+
+// Create a static (immovable) rectangle body
+Body body_create_static_rect(Vec2 pos, float width, float height);
+
+// === Common functions ===
+
+// Make an existing body static (sets inv_mass = 0, inv_inertia = 0)
 void body_set_static(Body *b);
 
 // Check if body is static (inv_mass == 0)

@@ -51,6 +51,20 @@ static void integrate_bodies(World *w) {
         // Semi-implicit Euler: update velocity first, then position
         b->velocity = vec2_add(b->velocity, vec2_scale(w->gravity, w->dt));
         b->position = vec2_add(b->position, vec2_scale(b->velocity, w->dt));
+        
+        // Angular integration (no torque sources yet, but structure supports it)
+        // angular_velocity would be updated by torque here if we had it
+
+        // 1. Integrate angular velocity from torque
+        // b->angular_velocity += b->torque * b->inv_inertia * dt;
+
+        // // 2. Integrate angle from angular velocity
+        // b->angle += b->angular_velocity * dt;
+
+        // // 3. Clear torque
+        // b->torque = 0.0f;
+
+        b->angle += b->angular_velocity * w->dt;
     }
 }
 
@@ -61,24 +75,29 @@ static void resolve_boundary_collisions(World *w) {
         Body *b = &w->bodies[i];
         if (body_is_static(b)) continue;
         
+        // Skip rectangles for now - proper boundary collision comes later
+        if (b->shape.type == SHAPE_RECT) continue;
+        
+        float radius = b->shape.circle.radius;
+        
         // Left wall
-        if (b->position.x - b->radius < w->bound_left) {
-            b->position.x = w->bound_left + b->radius;
+        if (b->position.x - radius < w->bound_left) {
+            b->position.x = w->bound_left + radius;
             b->velocity.x = -b->velocity.x * b->restitution;
         }
         // Right wall
-        if (b->position.x + b->radius > w->bound_right) {
-            b->position.x = w->bound_right - b->radius;
+        if (b->position.x + radius > w->bound_right) {
+            b->position.x = w->bound_right - radius;
             b->velocity.x = -b->velocity.x * b->restitution;
         }
         // Ceiling (top)
-        if (b->position.y - b->radius < w->bound_top) {
-            b->position.y = w->bound_top + b->radius;
+        if (b->position.y - radius < w->bound_top) {
+            b->position.y = w->bound_top + radius;
             b->velocity.y = -b->velocity.y * b->restitution;
         }
         // Floor (bottom)
-        if (b->position.y + b->radius > w->bound_bottom) {
-            b->position.y = w->bound_bottom - b->radius;
+        if (b->position.y + radius > w->bound_bottom) {
+            b->position.y = w->bound_bottom - radius;
             b->velocity.y = -b->velocity.y * b->restitution;
         }
     }
@@ -92,8 +111,30 @@ static int detect_all_collisions(World *w, Collision *collisions, int max_collis
     //TODO: optimize the collision detection algorithm
     for (int i = 0; i < w->body_count && count < max_collisions; i++) {
         for (int j = i + 1; j < w->body_count && count < max_collisions; j++) {
+            Body *a = &w->bodies[i];
+            Body *b = &w->bodies[j];
+            
             Collision col;
-            if (collision_detect_circles(&w->bodies[i], &w->bodies[j], &col)) {
+            int collided = 0;
+            
+            if (a->shape.type == SHAPE_CIRCLE && b->shape.type == SHAPE_CIRCLE) {
+                // Circle-circle collision
+                collided = collision_detect_circles(a, b, &col);
+            } 
+            else if (a->shape.type == SHAPE_CIRCLE && b->shape.type == SHAPE_RECT) {
+                // Circle-rect collision (circle is A, rect is B)
+                collided = collision_detect_circle_rect(a, b, &col);
+            }
+            else if (a->shape.type == SHAPE_RECT && b->shape.type == SHAPE_CIRCLE) {
+                // Rect-circle collision: call with swapped order, then negate normal
+                collided = collision_detect_circle_rect(b, a, &col);
+                if (collided) {
+                    col.normal = vec2_negate(col.normal);
+                }
+            }
+            // Rect-rect: not implemented yet
+            
+            if (collided) {
                 col.body_a = i;
                 col.body_b = j;
                 collisions[count++] = col;
@@ -150,7 +191,7 @@ int world_spawn_grid(World *w, int rows, int cols, Vec2 origin, float spacing,
                 origin.y + row * spacing
             );
             
-            Body b = body_create(pos, radius, mass, restitution);
+            Body b = body_create_circle(pos, radius, mass, restitution);
             // Give each body a slightly different color based on position
             b.color = (SDL_Color){
                 (Uint8)(100 + (col * 30) % 156),
@@ -192,7 +233,7 @@ int world_spawn_random(World *w, int count, float x_min, float y_min,
             255
         };
         
-        Body b = body_create(vec2(x, y), radius, 1.0f, restitution);
+        Body b = body_create_circle(vec2(x, y), radius, 1.0f, restitution);
         b.color = color;
         
         if (world_add_body(w, b) >= 0) {

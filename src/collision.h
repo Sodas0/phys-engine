@@ -14,6 +14,9 @@ typedef struct {
 // Returns 1 if colliding, 0 otherwise. Fills `out` with collision data.
 int collision_detect_circles(const Body *a, const Body *b, Collision *out);
 
+// Returns 1 if colliding, 0 otherwise. Circle must be first parameter.
+int collision_detect_circle_rect(const Body *circle, const Body *rect, Collision *out);
+
 // Resolve collision with impulse-based response and positional correction.
 // Modifies velocities and positions of bodies a and b.
 void collision_resolve(Body *a, Body *b, Collision *col);
