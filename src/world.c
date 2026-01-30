@@ -8,7 +8,9 @@ void world_init(World *w, Vec2 gravity, float dt) {
     w->gravity = gravity;
     w->dt = dt;
     w->bounds_enabled = 0;
-    
+    w->actuator_body_index = -1;
+    w->actuator_pivot = (Vec2){0.0f, 0.0f};
+
     // Default debug flags (all off)
     w->debug.show_velocity = 0;
     w->debug.show_contacts = 0;

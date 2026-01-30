@@ -2,6 +2,7 @@
 #define WORLD_H
 
 #include "body.h"
+#include "vec2.h"
 #include <SDL.h>
 
 #define MAX_BODIES 256
@@ -20,7 +21,12 @@ typedef struct {
     int body_count;
     Vec2 gravity;
     float dt;  // Fixed timestep
-    
+
+    // Optional: index of body used as actuator (e.g. fulcrum beam). -1 if none.
+    int actuator_body_index;
+    // Pivot position for the actuator (where it stays when no fulcrum base). Set at load from actuator body position.
+    Vec2 actuator_pivot;
+
     // World boundaries (for constraining bodies)
     float bound_left;
     float bound_right;

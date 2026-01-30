@@ -1,0 +1,32 @@
+{
+  "world": {
+    "gravity": [0, 98.1],
+    "dt": 0.016667,
+    "bounds": {
+      "left": 0,
+      "top": 0,
+      "right": 1920,
+      "bottom": 1080
+    }
+  },
+  "bodies": [
+    {
+      "type": "rect",
+      "position": [960, 540],
+      "width": 400,
+      "height": 24,
+      "mass": 2.0,
+      "restitution": 0.3,
+      "actuator": true,
+      "color": [180, 120, 80, 255]
+    },
+    {
+      "type": "circle",
+      "position": [935, 540],
+      "radius": 25,
+      "mass": 1.0,
+      "restitution": 0.4,
+      "color": [200, 100, 100, 255]
+    }
+  ]
+}

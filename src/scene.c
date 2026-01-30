@@ -267,7 +267,13 @@ int scene_load(const char *filepath, World *world) {
 
             Body body;
             if (parse_body(body_obj, &body) == 0) {
-                if (world_add_body(world, body) == -1) {
+                if (world_add_body(world, body) != -1) {
+                    cJSON *actuator = cJSON_GetObjectItem(body_obj, "actuator");
+                    if (actuator && cJSON_IsTrue(actuator)) {
+                        world->actuator_body_index = world->body_count - 1;
+                        world->actuator_pivot = body.position;
+                    }
+                } else {
                     fprintf(stderr, "Warning: Failed to add body %d (world full?)\n", i);
                 }
             } else {

@@ -57,6 +57,7 @@ Each body in the `bodies` array can have the following properties:
 - `angle`: Initial rotation in radians (default: 0)
 - `color`: [r, g, b, a] - RGBA color, 0-255 (default: [255, 255, 255, 255])
 - `static`: true/false - Makes body immovable (default: false)
+- `actuator`: true/false - Marks body as the controllable actuator (e.g. fulcrum beam). Only one body per scene. A/D keys tilt it when the main loop supports it (default: false)
 
 
 
