@@ -227,7 +227,7 @@ void render_body_debug(SDL_Renderer *r, const Body *b, int show_velocity) {
     render_body(r, b);
     
     if (show_velocity && !body_is_static(b)) {
-        float vel_scale = 20.0f;
+        float vel_scale = 1.0f;
         SDL_Color yellow = {255, 255, 0, 255};
         render_arrow(r, (int)b->position.x, (int)b->position.y,
                      b->velocity.x * vel_scale, b->velocity.y * vel_scale, yellow);

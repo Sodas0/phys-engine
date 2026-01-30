@@ -9,8 +9,8 @@
 #define PI 3.14159265358979323846f
 
 // Window dimensions
-#define WINDOW_WIDTH 600
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1920
+#define WINDOW_HEIGHT 1080
 
 //TODO: make main function more concise
 int main(int argc, char *argv[]) {
@@ -29,89 +29,36 @@ int main(int argc, char *argv[]) {
 
     // === Initialize physics world ===
     World world;
-    //TODO: make gravity in m/s^2, and not pixels/frame
-    world_init(&world, vec2(0, 98.1f), 1.0f / 60.0f);  // Stronger gravity for fun
+    // SANITY TEST: Disable gravity to isolate angular impulse behavior
+    // world_init(&world, vec2(0, 98.1f), 1.0f / 60.0f);  // Zero gravity
+    world_init(&world, vec2(0, 0.0f), 1.0f / 60.0f);  // Zero gravity
     world_set_bounds(&world, 0.0f, 0.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
     
     // Configure debug visualization
-    world.debug.show_velocity = 0;  // Set to 1 to see velocity vectors
+    world.debug.show_velocity = 1;  // See velocity vectors
 
-    // === Add bodies using body_default() ===
-    // Pattern: create with defaults, modify what you need, then add
     Body b;
-    // === Simple circle-rect collision test ===
-
-    // Static rectangle platform at the bottom
-    b = body_create_rect(vec2(300, 500), 400.0f, 40.0f, 1.0f, 0.8f);
-    b.color = (SDL_Color){100, 100, 100, 255};
-    world_add_body(&world, b);
-
-    // Spinning rectangle
-    b = body_create_rect(vec2(300, 300), 100.0f, 60.0f, 1.0f, 0.8f);
-    b.color = (SDL_Color){100, 150, 255, 255};
-    b.angle = 0.5f;  // ~28 degrees
-    world_add_body(&world, b);
-
-    // Circle that falls onto the platform
-    b = body_default(vec2(300, 100), 30.0f);
-    b.color = (SDL_Color){255, 100, 100, 255};
-    b.restitution = 0.8f;
-    world_add_body(&world, b);
-
-    // Another circle offset to test corner collision
-    b = body_default(vec2(150, 150), 25.0f);
-    b.color = (SDL_Color){100, 255, 100, 255};
-    b.velocity = vec2(50, 0);  // Moving right
-    world_add_body(&world, b);
-
-    /* old scene
-    // // Big red ball
-    // b = body_default(vec2(400, 100), 60.0f);
-    // b.color = (SDL_Color){255, 100, 100, 255};
-    // b.restitution = 1.0f;
-    // world_add_body(&world, b);
-
-    // // Green ball moving right
-    // b = body_default(vec2(200, 50), 30.0f);
-    // b.velocity = vec2(100, 0);
-    // b.color = (SDL_Color){100, 255, 100, 255};
-    // b.restitution = 1.0f;
-    // world_add_body(&world, b);
-
-    // // === Rectangle bodies ===
     
-    // // Blue rectangle (falling)
-    // b = body_default_rect(vec2(300, 200), 120.0f, 80.0f);
-    // b.color = (SDL_Color){100, 150, 255, 255};
+    // Dynamic rectangle target (centered)
+    b = body_create_rect(vec2(400, 300), 120.0f, 80.0f, 5.0f, 0.5f);
+    b.color = (SDL_Color){100, 150, 255, 255};
+    b.restitution = 1.0f;
+    world_add_body(&world, b);
+    
+    // TEST 1: Circle fired at CORNER of rectangle (should cause rotation)
+    b = body_default(vec2(100, 246), 20.0f);
+    b.color = (SDL_Color){255, 100, 100, 255};
+    b.velocity = vec2(200, 0);  // Fast horizontal shot at top-left corner
+    b.restitution = 1.0f;
+    world_add_body(&world, b);
+    
+    // // TEST 2: Circle fired at CENTER of rectangle (minimal rotation)
+    // b = body_default(vec2(100, 300), 20.0f);
+    // b.color = (SDL_Color){100, 255, 100, 255};
+    // b.velocity = vec2(200, 0);  // Same speed, aimed at center
     // b.restitution = 0.6f;
     // world_add_body(&world, b);
-
-    // // Purple spinning rectangle
-    // b = body_default_rect(vec2(480, 150), 100.0f, 60.0f);
-    // b.color = (SDL_Color){180, 100, 255, 255};
-    // b.angular_velocity = 2.0f;  // Spinning!
-    // b.restitution = 0.8f;
-    // world_add_body(&world, b);
-
-    // // Orange rectangle at 45 degrees (starts tilted)
-    // b = body_default_rect(vec2(150, 300), 80.0f, 40.0f);
-    // b.color = (SDL_Color){255, 165, 0, 255};
-    // b.angle = PI / 4.0f;
-    // b.angular_velocity = -1.0f;  // Spinning the other way
-    // world_add_body(&world, b);
-   
-   end old scene */
-   
-    // Bulk spawn for stress testing
-    // world_spawn_random(&world, 69,
-    //     50, 50,                              // min x, y (margin for radius)
-    //     WINDOW_WIDTH - 50, WINDOW_HEIGHT - 50,  // max x, y (margin for radius)
-    //     20, 50,                              // radius range
-    //     1.0f, 1.0f);                         // restitution range
-
-    // printf("Spawned %d bodies\n", world.body_count);
     
-
     int running = 1;
     SDL_Event event;
     while (running) {

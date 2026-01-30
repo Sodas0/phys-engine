@@ -96,29 +96,121 @@ static void resolve_circle_vs_bounds(Body *b, float left, float top, float right
     }
 }
 
+// Resolve rotated rectangle vs world boundaries (OBB vs planes)
+// Strategy: Compute all 4 rotated corners, check each against boundaries,
+// find worst penetration, then apply impulse-based collision response.
+// This correctly handles rotated rectangles by using b->angle.
 static void resolve_rect_vs_bounds(Body *b, float left, float top, float right, float bottom) {
     float half_w = b->shape.rect.width * 0.5f;
     float half_h = b->shape.rect.height * 0.5f;
     
-    // Left wall
-    if (b->position.x - half_w < left) {
-        b->position.x = left + half_w;
-        b->velocity.x = -b->velocity.x * b->restitution;
+    // Compute the 4 corners of the rotated rectangle (OBB)
+    float cos_angle = cosf(b->angle);
+    float sin_angle = sinf(b->angle);
+    
+    // Local corner offsets (relative to center)
+    Vec2 local_corners[4] = {
+        vec2(-half_w, -half_h),  // Top-left
+        vec2( half_w, -half_h),  // Top-right
+        vec2( half_w,  half_h),  // Bottom-right
+        vec2(-half_w,  half_h)   // Bottom-left
+    };
+    
+    // Transform corners to world space
+    Vec2 world_corners[4];
+    for (int i = 0; i < 4; i++) {
+        float wx = local_corners[i].x * cos_angle - local_corners[i].y * sin_angle;
+        float wy = local_corners[i].x * sin_angle + local_corners[i].y * cos_angle;
+        world_corners[i] = vec2_add(vec2(wx, wy), b->position);
     }
-    // Right wall
-    if (b->position.x + half_w > right) {
-        b->position.x = right - half_w;
-        b->velocity.x = -b->velocity.x * b->restitution;
+    
+    // Check each corner against boundaries and resolve
+    // Track the worst penetration for each boundary
+    float max_penetration = 0.0f;
+    Vec2 correction = VEC2_ZERO;
+    Vec2 collision_normal = VEC2_ZERO;
+    Vec2 contact_point = VEC2_ZERO;
+    int had_collision = 0;
+    
+    for (int i = 0; i < 4; i++) {
+        Vec2 corner = world_corners[i];
+        
+        // Left wall
+        if (corner.x < left) {
+            float penetration = left - corner.x;
+            if (penetration > max_penetration) {
+                max_penetration = penetration;
+                correction = vec2(penetration, 0.0f);
+                collision_normal = vec2(1.0f, 0.0f);  // Normal points right (into rect)
+                contact_point = vec2(left, corner.y);
+                had_collision = 1;
+            }
+        }
+        // Right wall
+        if (corner.x > right) {
+            float penetration = corner.x - right;
+            if (penetration > max_penetration) {
+                max_penetration = penetration;
+                correction = vec2(-penetration, 0.0f);
+                collision_normal = vec2(-1.0f, 0.0f);  // Normal points left (into rect)
+                contact_point = vec2(right, corner.y);
+                had_collision = 1;
+            }
+        }
+        // Ceiling (top)
+        if (corner.y < top) {
+            float penetration = top - corner.y;
+            if (penetration > max_penetration) {
+                max_penetration = penetration;
+                correction = vec2(0.0f, penetration);
+                collision_normal = vec2(0.0f, 1.0f);  // Normal points down (into rect)
+                contact_point = vec2(corner.x, top);
+                had_collision = 1;
+            }
+        }
+        // Floor (bottom)
+        if (corner.y > bottom) {
+            float penetration = corner.y - bottom;
+            if (penetration > max_penetration) {
+                max_penetration = penetration;
+                correction = vec2(0.0f, -penetration);
+                collision_normal = vec2(0.0f, -1.0f);  // Normal points up (into rect)
+                contact_point = vec2(corner.x, bottom);
+                had_collision = 1;
+            }
+        }
     }
-    // Ceiling (top)
-    if (b->position.y - half_h < top) {
-        b->position.y = top + half_h;
-        b->velocity.y = -b->velocity.y * b->restitution;
-    }
-    // Floor (bottom)
-    if (b->position.y + half_h > bottom) {
-        b->position.y = bottom - half_h;
-        b->velocity.y = -b->velocity.y * b->restitution;
+    
+    // Apply collision response if we had a boundary collision
+    if (had_collision) {
+        // Apply positional correction
+        b->position = vec2_add(b->position, correction);
+        
+        // Calculate velocity at contact point
+        Vec2 r = vec2_sub(contact_point, b->position);
+        Vec2 point_velocity = vec2_add(b->velocity, vec2_scale(vec2_perp(r), b->angular_velocity));
+        
+        // Velocity component along the collision normal
+        float vel_along_normal = vec2_dot(point_velocity, collision_normal);
+        
+        // Only resolve if moving into the boundary
+        if (vel_along_normal < 0.0f) {
+            // Calculate impulse (treating boundary as infinite mass)
+            // For boundary collision, the effective mass calculation simplifies
+            float r_cross_n = vec2_cross(r, collision_normal);
+            float inv_mass_sum = b->inv_mass + r_cross_n * r_cross_n * b->inv_inertia;
+            
+            if (inv_mass_sum > 1e-8f) {
+                float j = -(1.0f + b->restitution) * vel_along_normal / inv_mass_sum;
+                Vec2 impulse = vec2_scale(collision_normal, j);
+                
+                // Apply impulse to velocity
+                b->velocity = vec2_add(b->velocity, vec2_scale(impulse, b->inv_mass));
+                
+                // Apply angular impulse
+                b->angular_velocity += vec2_cross(r, impulse) * b->inv_inertia;
+            }
+        }
     }
 }
 
