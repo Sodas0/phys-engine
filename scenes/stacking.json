@@ -1,0 +1,75 @@
+{
+  "world": {
+    "gravity": [0, 98.1],
+    "dt": 0.016667,
+    "bounds": {
+      "left": 0,
+      "top": 0,
+      "right": 1920,
+      "bottom": 1080
+    }
+  },
+  "bodies": [
+    {
+      "type": "rect",
+      "position": [960, 1000],
+      "width": 1800,
+      "height": 50,
+      "static": true,
+      "color": [100, 100, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [960, 920],
+      "width": 80,
+      "height": 40,
+      "mass": 2.0,
+      "restitution": 0.3,
+      "color": [200, 100, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [960, 860],
+      "width": 80,
+      "height": 40,
+      "mass": 2.0,
+      "restitution": 0.3,
+      "color": [100, 200, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [960, 800],
+      "width": 80,
+      "height": 40,
+      "mass": 2.0,
+      "restitution": 0.3,
+      "color": [100, 100, 200, 255]
+    },
+    {
+      "type": "rect",
+      "position": [960, 740],
+      "width": 80,
+      "height": 40,
+      "mass": 2.0,
+      "restitution": 0.3,
+      "color": [200, 200, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [960, 680],
+      "width": 80,
+      "height": 40,
+      "mass": 2.0,
+      "restitution": 0.3,
+      "color": [200, 100, 200, 255]
+    },
+    {
+      "type": "circle",
+      "position": [960, 600],
+      "radius": 30,
+      "mass": 1.5,
+      "restitution": 0.4,
+      "color": [255, 150, 150, 255]
+    }
+  ]
+}

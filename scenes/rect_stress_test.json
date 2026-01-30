@@ -1,0 +1,563 @@
+{
+  "world": {
+    "gravity": [0, 98.1],
+    "dt": 0.016667,
+    "bounds": {
+      "left": 0,
+      "top": 0,
+      "right": 1920,
+      "bottom": 1080
+    }
+  },
+  "bodies": [
+    
+
+    {
+      "comment": "=== SECTION 2: Rotation Angle Tests (0°, 15°, 30°, 45°, 60°, 75°, 90°) ===",
+      "type": "rect",
+      "position": [200, 900],
+      "width": 100,
+      "height": 40,
+      "angle": 0.0,
+      "mass": 2.0,
+      "restitution": 0.2,
+      "color": [255, 100, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [200, 800],
+      "width": 100,
+      "height": 40,
+      "angle": 0.2618,
+      "mass": 2.0,
+      "restitution": 0.2,
+      "color": [255, 120, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [200, 700],
+      "width": 100,
+      "height": 40,
+      "angle": 0.5236,
+      "mass": 2.0,
+      "restitution": 0.2,
+      "color": [255, 140, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [200, 600],
+      "width": 100,
+      "height": 40,
+      "angle": 0.7854,
+      "mass": 2.0,
+      "restitution": 0.2,
+      "color": [255, 160, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [200, 500],
+      "width": 100,
+      "height": 40,
+      "angle": 1.0472,
+      "mass": 2.0,
+      "restitution": 0.2,
+      "color": [255, 180, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [200, 400],
+      "width": 100,
+      "height": 40,
+      "angle": 1.3090,
+      "mass": 2.0,
+      "restitution": 0.2,
+      "color": [255, 200, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [200, 300],
+      "width": 100,
+      "height": 40,
+      "angle": 1.5708,
+      "mass": 2.0,
+      "restitution": 0.2,
+      "color": [255, 220, 100, 255]
+    },
+
+    {
+      "comment": "=== SECTION 3: Vertical Stack (stability test) ===",
+      "type": "rect",
+      "position": [450, 950],
+      "width": 120,
+      "height": 40,
+      "angle": 0.0,
+      "mass": 3.0,
+      "restitution": 0.1,
+      "color": [100, 150, 255, 255]
+    },
+    {
+      "type": "rect",
+      "position": [450, 890],
+      "width": 120,
+      "height": 40,
+      "angle": 0.0,
+      "mass": 3.0,
+      "restitution": 0.1,
+      "color": [100, 160, 255, 255]
+    },
+    {
+      "type": "rect",
+      "position": [450, 830],
+      "width": 120,
+      "height": 40,
+      "angle": 0.0,
+      "mass": 3.0,
+      "restitution": 0.1,
+      "color": [100, 170, 255, 255]
+    },
+    {
+      "type": "rect",
+      "position": [450, 770],
+      "width": 120,
+      "height": 40,
+      "angle": 0.0,
+      "mass": 3.0,
+      "restitution": 0.1,
+      "color": [100, 180, 255, 255]
+    },
+    {
+      "type": "rect",
+      "position": [450, 710],
+      "width": 120,
+      "height": 40,
+      "angle": 0.0,
+      "mass": 3.0,
+      "restitution": 0.1,
+      "color": [100, 190, 255, 255]
+    },
+
+    {
+      "comment": "=== SECTION 4: Tilted Stack (off-angle stability) ===",
+      "type": "rect",
+      "position": [650, 950],
+      "width": 100,
+      "height": 35,
+      "angle": 0.15,
+      "mass": 2.5,
+      "restitution": 0.1,
+      "color": [150, 255, 150, 255]
+    },
+    {
+      "type": "rect",
+      "position": [650, 895],
+      "width": 100,
+      "height": 35,
+      "angle": -0.12,
+      "mass": 2.5,
+      "restitution": 0.1,
+      "color": [160, 255, 150, 255]
+    },
+    {
+      "type": "rect",
+      "position": [650, 840],
+      "width": 100,
+      "height": 35,
+      "angle": 0.18,
+      "mass": 2.5,
+      "restitution": 0.1,
+      "color": [170, 255, 150, 255]
+    },
+    {
+      "type": "rect",
+      "position": [650, 785],
+      "width": 100,
+      "height": 35,
+      "angle": -0.1,
+      "mass": 2.5,
+      "restitution": 0.1,
+      "color": [180, 255, 150, 255]
+    },
+
+    {
+      "comment": "=== SECTION 5: Size Variations (thin, square, wide) ===",
+      "type": "rect",
+      "position": [850, 950],
+      "width": 150,
+      "height": 20,
+      "angle": 0.0,
+      "mass": 2.0,
+      "restitution": 0.2,
+      "color": [255, 255, 100, 255],
+      "comment": "Wide thin rect"
+    },
+    {
+      "type": "rect",
+      "position": [850, 890],
+      "width": 60,
+      "height": 60,
+      "angle": 0.3,
+      "mass": 2.5,
+      "restitution": 0.2,
+      "color": [255, 200, 100, 255],
+      "comment": "Square"
+    },
+    {
+      "type": "rect",
+      "position": [850, 810],
+      "width": 25,
+      "height": 120,
+      "angle": 0.0,
+      "mass": 2.0,
+      "restitution": 0.2,
+      "color": [255, 150, 100, 255],
+      "comment": "Tall thin rect"
+    },
+
+    {
+      "comment": "=== SECTION 6: High-Speed Projectiles (collision detection stress) ===",
+      "type": "rect",
+      "position": [1900, 200],
+      "width": 60,
+      "height": 30,
+      "angle": 0.5,
+      "velocity": [-400, 50],
+      "angular_velocity": 2.0,
+      "mass": 1.5,
+      "restitution": 0.6,
+      "color": [255, 100, 255, 255]
+    },
+    {
+      "type": "rect",
+      "position": [20, 400],
+      "width": 50,
+      "height": 40,
+      "angle": -0.3,
+      "velocity": [450, -30],
+      "angular_velocity": -3.0,
+      "mass": 1.8,
+      "restitution": 0.6,
+      "color": [255, 150, 255, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1900, 600],
+      "width": 70,
+      "height": 35,
+      "angle": 0.8,
+      "velocity": [-500, 100],
+      "angular_velocity": 4.0,
+      "mass": 2.0,
+      "restitution": 0.7,
+      "color": [255, 100, 200, 255]
+    },
+
+    {
+      "comment": "=== SECTION 7: Corner-Corner Collision Setup (hardest case) ===",
+      "type": "rect",
+      "position": [1100, 800],
+      "width": 80,
+      "height": 80,
+      "angle": 0.7854,
+      "mass": 2.0,
+      "restitution": 0.3,
+      "color": [100, 255, 255, 255],
+      "comment": "45° diamond shape"
+    },
+    {
+      "type": "rect",
+      "position": [1100, 650],
+      "width": 80,
+      "height": 80,
+      "angle": 0.7854,
+      "mass": 2.0,
+      "restitution": 0.3,
+      "color": [120, 255, 255, 255],
+      "comment": "45° diamond above"
+    },
+
+    {
+      "comment": "=== SECTION 8: Domino Chain (cascading collisions) ===",
+      "type": "rect",
+      "position": [1300, 980],
+      "width": 30,
+      "height": 100,
+      "angle": 0.0,
+      "mass": 1.0,
+      "restitution": 0.1,
+      "color": [200, 100, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1350, 980],
+      "width": 30,
+      "height": 100,
+      "angle": 0.0,
+      "mass": 1.0,
+      "restitution": 0.1,
+      "color": [200, 120, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1400, 980],
+      "width": 30,
+      "height": 100,
+      "angle": 0.0,
+      "mass": 1.0,
+      "restitution": 0.1,
+      "color": [200, 140, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1450, 980],
+      "width": 30,
+      "height": 100,
+      "angle": 0.0,
+      "mass": 1.0,
+      "restitution": 0.1,
+      "color": [200, 160, 100, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1500, 980],
+      "width": 30,
+      "height": 100,
+      "angle": 0.0,
+      "mass": 1.0,
+      "restitution": 0.1,
+      "color": [200, 180, 100, 255]
+    },
+    {
+      "comment": "Domino trigger ball",
+      "type": "circle",
+      "position": [1200, 900],
+      "radius": 40,
+      "mass": 5.0,
+      "restitution": 0.3,
+      "color": [255, 50, 50, 255]
+    },
+
+    {
+      "comment": "=== SECTION 9: Mass Variation Test (heavy vs light) ===",
+      "type": "rect",
+      "position": [1650, 950],
+      "width": 100,
+      "height": 40,
+      "angle": 0.0,
+      "mass": 0.1,
+      "restitution": 0.3,
+      "color": [150, 150, 255, 255],
+      "comment": "Very light"
+    },
+    {
+      "type": "rect",
+      "position": [1650, 880],
+      "width": 100,
+      "height": 40,
+      "angle": 0.0,
+      "mass": 20.0,
+      "restitution": 0.3,
+      "color": [100, 100, 200, 255],
+      "comment": "Very heavy"
+    },
+    {
+      "type": "rect",
+      "position": [1650, 810],
+      "width": 100,
+      "height": 40,
+      "angle": 0.0,
+      "mass": 0.5,
+      "restitution": 0.3,
+      "color": [150, 150, 255, 255],
+      "comment": "Light"
+    },
+
+    {
+      "comment": "=== SECTION 10: Cross/X Configuration (4-way collision) ===",
+      "type": "rect",
+      "position": [1850, 800],
+      "width": 120,
+      "height": 30,
+      "angle": 0.0,
+      "mass": 2.0,
+      "restitution": 0.2,
+      "color": [255, 200, 200, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1850, 800],
+      "width": 120,
+      "height": 30,
+      "angle": 1.5708,
+      "mass": 2.0,
+      "restitution": 0.2,
+      "color": [200, 255, 200, 255]
+    },
+
+    {
+      "comment": "=== SECTION 11: Rotating Obstacle (continuous angular velocity) ===",
+      "type": "rect",
+      "position": [1100, 400],
+      "width": 200,
+      "height": 25,
+      "angle": 0.0,
+      "angular_velocity": 2.0,
+      "mass": 3.0,
+      "restitution": 0.5,
+      "color": [255, 150, 50, 255]
+    },
+    {
+      "comment": "Objects to collide with rotating obstacle",
+      "type": "rect",
+      "position": [1100, 250],
+      "width": 50,
+      "height": 50,
+      "mass": 1.5,
+      "restitution": 0.4,
+      "color": [150, 200, 255, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1000, 400],
+      "width": 40,
+      "height": 60,
+      "mass": 1.2,
+      "restitution": 0.4,
+      "color": [150, 220, 255, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1200, 400],
+      "width": 60,
+      "height": 40,
+      "mass": 1.8,
+      "restitution": 0.4,
+      "color": [150, 240, 255, 255]
+    },
+
+    {
+      "comment": "=== SECTION 12: Edge-Edge Parallel Test (near-parallel edges) ===",
+      "type": "rect",
+      "position": [1400, 600],
+      "width": 150,
+      "height": 30,
+      "angle": 0.1,
+      "mass": 2.5,
+      "restitution": 0.2,
+      "color": [200, 150, 255, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1400, 520],
+      "width": 140,
+      "height": 30,
+      "angle": 0.12,
+      "mass": 2.5,
+      "restitution": 0.2,
+      "color": [220, 150, 255, 255]
+    },
+
+    {
+      "comment": "=== SECTION 13: Tiny Rectangles (precision test) ===",
+      "type": "rect",
+      "position": [1700, 600],
+      "width": 15,
+      "height": 15,
+      "angle": 0.5,
+      "mass": 0.5,
+      "restitution": 0.5,
+      "color": [255, 255, 200, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1730, 600],
+      "width": 12,
+      "height": 18,
+      "angle": -0.3,
+      "mass": 0.4,
+      "restitution": 0.5,
+      "color": [255, 255, 180, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1760, 600],
+      "width": 20,
+      "height": 10,
+      "angle": 0.8,
+      "mass": 0.6,
+      "restitution": 0.5,
+      "color": [255, 255, 160, 255]
+    },
+
+    {
+      "comment": "=== SECTION 14: Dense Cluster (multiple simultaneous collisions) ===",
+      "type": "rect",
+      "position": [1550, 300],
+      "width": 60,
+      "height": 40,
+      "angle": 0.2,
+      "mass": 1.5,
+      "restitution": 0.3,
+      "color": [100, 200, 200, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1610, 300],
+      "width": 55,
+      "height": 45,
+      "angle": -0.3,
+      "mass": 1.5,
+      "restitution": 0.3,
+      "color": [120, 200, 200, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1670, 300],
+      "width": 50,
+      "height": 50,
+      "angle": 0.5,
+      "mass": 1.5,
+      "restitution": 0.3,
+      "color": [140, 200, 200, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1730, 300],
+      "width": 45,
+      "height": 55,
+      "angle": -0.4,
+      "mass": 1.5,
+      "restitution": 0.3,
+      "color": [160, 200, 200, 255]
+    },
+    {
+      "type": "rect",
+      "position": [1790, 300],
+      "width": 40,
+      "height": 60,
+      "angle": 0.6,
+      "mass": 1.5,
+      "restitution": 0.3,
+      "color": [180, 200, 200, 255]
+    },
+
+    {
+      "comment": "=== SECTION 15: Mixed Shapes (ensure rect-circle still works) ===",
+      "type": "circle",
+      "position": [100, 200],
+      "radius": 50,
+      "mass": 3.0,
+      "restitution": 0.5,
+      "color": [255, 100, 150, 255]
+    },
+    {
+      "type": "rect",
+      "position": [100, 100],
+      "width": 80,
+      "height": 40,
+      "angle": 0.4,
+      "mass": 2.0,
+      "restitution": 0.4,
+      "color": [150, 100, 255, 255]
+    }
+  ]
+}
