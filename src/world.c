@@ -327,6 +327,22 @@ void world_render_debug(World *w, SDL_Renderer *r) {
     for (int i = 0; i < w->body_count; i++) {
         render_body_debug(r, &w->bodies[i], w->debug.show_velocity);
     }
+
+    // Rect-rect contact debug: show contact point, normal, and penetration
+    if (w->debug.show_contacts) {
+        Collision contacts[MAX_COLLISIONS];
+        int n = detect_all_collisions(w, contacts, MAX_COLLISIONS);
+        for (int i = 0; i < n; i++) {
+            Body *a = &w->bodies[contacts[i].body_a];
+            Body *b = &w->bodies[contacts[i].body_b];
+            if (a->shape.type == SHAPE_RECT && b->shape.type == SHAPE_RECT) {
+                render_contact_debug(r,
+                    contacts[i].contact.x, contacts[i].contact.y,
+                    contacts[i].normal.x, contacts[i].normal.y,
+                    contacts[i].penetration);
+            }
+        }
+    }
 }
 
 // --- Spawn Helpers ---

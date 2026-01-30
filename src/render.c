@@ -196,6 +196,30 @@ void render_arrow(SDL_Renderer *r, int x, int y, float vx, float vy, SDL_Color c
     SDL_RenderDrawLine(r, ex, ey, bx, by);
 }
 
+// Debug: draw rect-rect contact point, normal arrow, and penetration depth
+void render_contact_debug(SDL_Renderer *r, float contact_x, float contact_y,
+                          float normal_x, float normal_y, float penetration) {
+    int cx = (int)contact_x;
+    int cy = (int)contact_y;
+
+    // 1. Contact point: bright dot so you see WHERE the contact is
+    SDL_Color contact_color = {255, 0, 255, 255};   /* magenta */
+    render_point(r, cx, cy, 10, contact_color);
+
+    // 2. Normal arrow: shows WHICH WAY the collision pushes (from A toward B)
+    float arrow_len = 50.0f;
+    SDL_Color normal_color = {0, 255, 128, 255};   /* green */
+    render_arrow(r, cx, cy, normal_x * arrow_len, normal_y * arrow_len, normal_color);
+
+    // 3. Penetration: short red line showing HOW DEEP the overlap is
+    if (penetration > 0.5f) {
+        int px = cx + (int)(normal_x * penetration);
+        int py = cy + (int)(normal_y * penetration);
+        SDL_Color pen_color = {255, 80, 80, 255};  /* red */
+        render_line(r, cx, cy, px, py, pen_color);
+    }
+}
+
 void render_body(SDL_Renderer *r, const Body *b) {
     float cx = b->position.x;
     float cy = b->position.y;

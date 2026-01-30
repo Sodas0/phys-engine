@@ -270,6 +270,20 @@ static void project_corners_onto_axis(const Vec2 corners[4], Vec2 axis, float *m
     }
 }
 
+// Helper: Find the vertex farthest in a given direction (support point)
+static Vec2 get_support_point(const Vec2 corners[4], Vec2 direction) {
+    float max_proj = vec2_dot(corners[0], direction);
+    int max_idx = 0;
+    for (int i = 1; i < 4; i++) {
+        float proj = vec2_dot(corners[i], direction);
+        if (proj > max_proj) {
+            max_proj = proj;
+            max_idx = i;
+        }
+    }
+    return corners[max_idx];
+}
+
 // Helper: Check if two projection ranges overlap, return overlap amount
 // Returns negative if separated, positive if overlapping
 static float get_overlap(float min_a, float max_a, float min_b, float max_b) {
@@ -306,7 +320,6 @@ int collision_detect_rects(const Body *a, const Body *b, Collision *out) {
     // Track minimum overlap axis (for collision resolution)
     float min_overlap = INFINITY;
     Vec2 collision_axis = VEC2_ZERO;
-    int best_axis_idx = -1;
     
     // Test all 4 axes for separation
     for (int i = 0; i < 4; i++) {
@@ -334,7 +347,6 @@ int collision_detect_rects(const Body *a, const Body *b, Collision *out) {
         if (overlap < min_overlap) {
             min_overlap = overlap;
             collision_axis = axis;
-            best_axis_idx = i;
         }
     }
     
@@ -348,18 +360,13 @@ int collision_detect_rects(const Body *a, const Body *b, Collision *out) {
     }
     out->normal = collision_axis;
     
-    // Calculate contact point (approximation: use midpoint between centers projected onto collision surface)
-    // For more accurate contact points, we'd need to find the actual overlapping region
-    // Simple approximation: contact is at the collision surface between the two centers
-    Vec2 contact_from_a = vec2_scale(out->normal, 
-        (best_axis_idx < 2 ? a->shape.rect.width : a->shape.rect.height) * 0.5f);
-    out->contact = vec2_add(a->position, contact_from_a);
-    
-    // Alternative: average the contact point from both bodies
-    Vec2 contact_from_b = vec2_scale(vec2_negate(out->normal),
-        (best_axis_idx >= 2 ? b->shape.rect.width : b->shape.rect.height) * 0.5f);
-    Vec2 contact_b = vec2_add(b->position, contact_from_b);
-    out->contact = vec2_scale(vec2_add(out->contact, contact_b), 0.5f);
+    // Calculate contact point using support points:
+    // - Support point on A in direction of normal (farthest vertex toward B)
+    // - Support point on B in opposite direction (farthest vertex toward A)
+    // - Average them to get a contact point at the collision interface
+    Vec2 support_a = get_support_point(corners_a, out->normal);
+    Vec2 support_b = get_support_point(corners_b, vec2_negate(out->normal));
+    out->contact = vec2_scale(vec2_add(support_a, support_b), 0.5f);
     
     out->body_a = -1;
     out->body_b = -1;

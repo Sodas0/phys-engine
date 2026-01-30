@@ -11,7 +11,7 @@
 // Debug visualization flags
 typedef struct {
     int show_velocity;         // Draw velocity vectors
-    int show_contacts;         // Draw contact points (future)
+    int show_contacts;         // Draw rect-rect contact points, normals, penetration
     int show_normals;          // Draw collision normals (future)
 } DebugFlags;
 

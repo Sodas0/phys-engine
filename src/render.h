@@ -16,6 +16,8 @@ void render_rect_rotated_filled(SDL_Renderer *r, float cx, float cy, float width
 void render_line(SDL_Renderer *r, int x1, int y1, int x2, int y2, SDL_Color color);
 void render_point(SDL_Renderer *r, int x, int y, int size, SDL_Color color);
 void render_arrow(SDL_Renderer *r, int x, int y, float vx, float vy, SDL_Color color);
+void render_contact_debug(SDL_Renderer *r, float contact_x, float contact_y,
+                          float normal_x, float normal_y, float penetration);
 
 // Body rendering functions
 void render_body(SDL_Renderer *r, const Body *b);
