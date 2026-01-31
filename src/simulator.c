@@ -4,6 +4,13 @@
 #include <string.h>
 #include <math.h>
 
+// Actuator dynamics parameters
+// NOTE FOR MY OWN INTUITION:
+// when tau big -- slow motor response ; when tau small -- fast motor response
+#define MAX_BEAM_SPEED 2.0f        // rad/s (maximum angular velocity)
+#define ACTUATOR_TAU 0.1f          // seconds (time constant for first-order lag)
+#define BEAM_ANGLE_MAX 0.5f        // radians (saturation limit)
+
 // Helper: apply actuator pose (matches main.c logic exactly)
 static void apply_actuator_pose(World *world, float angle) {
     if (world->actuator_body_index < 0) return;
@@ -37,6 +44,10 @@ Simulator* sim_create(const char* scene_path, uint32_t seed, float dt) {
     sim->seed = seed;
     sim->dt = dt;
     
+    // Initialize actuator state
+    sim->actuator.angle = 0.0f;
+    sim->actuator.angular_velocity = 0.0f;
+    
     // Load initial scene
     if (scene_load(scene_path, &sim->world) != 0) {
         free(sim);
@@ -65,21 +76,57 @@ void sim_reset(Simulator* sim) {
     scene_load(sim->scene_path, &sim->world);
     sim->world.dt = sim->dt;
     world_seed(&sim->world, sim->seed);
+    
+    // Reset actuator state
+    sim->actuator.angle = 0.0f;
+    sim->actuator.angular_velocity = 0.0f;
 }
 
+// Update actuator dynamics and apply to world
+// action ∈ [-1, 1]: normalized motor command
 void sim_step(Simulator* sim, float action) {
     if (!sim) return;
     
-    // Apply action before physics step
-    apply_actuator_pose(&sim->world, action);
+    // Clamp action to valid range
+    if (action > 1.0f) action = 1.0f;
+    if (action < -1.0f) action = -1.0f;
+    
+    // First-order actuator dynamics
+    float target_velocity = action * MAX_BEAM_SPEED;
+    float dt = sim->dt;
+    float tau = ACTUATOR_TAU;
+    
+    // Exponential filter: v_new = v_old + (dt/tau) * (target - v_old)
+    // this is a differential equation.
+    // physical interpretation: 
+    // angular acceleration is determined by the difference between the target velocity and the current velocity, scaled by constant 1/tau.
+    // which results in fast acceleration when the difference is large, and slow acceleration when the difference is small, kind of like a dampening effect.
+    sim->actuator.angular_velocity += (dt / tau) * (target_velocity - sim->actuator.angular_velocity);
+    
+    // Integrate angle
+    sim->actuator.angle += sim->actuator.angular_velocity * dt; 
+    
+    // Apply saturation limits
+    if (sim->actuator.angle > BEAM_ANGLE_MAX) {
+        sim->actuator.angle = BEAM_ANGLE_MAX;
+        sim->actuator.angular_velocity = 0.0f;  // Stop at limit
+    }
+    if (sim->actuator.angle < -BEAM_ANGLE_MAX) {
+        sim->actuator.angle = -BEAM_ANGLE_MAX;
+        sim->actuator.angular_velocity = 0.0f;  // Stop at limit
+    }
+    
+    // Apply actuator pose before physics step
+    apply_actuator_pose(&sim->world, sim->actuator.angle);
     
     // Advance physics by one timestep
     world_step(&sim->world);
     
     // Reapply actuator pose after physics step
-    apply_actuator_pose(&sim->world, action);
+    apply_actuator_pose(&sim->world, sim->actuator.angle);
 }
 
+// pointer to world for rendering purposes
 World* sim_get_world(Simulator* sim) {
     return sim ? &sim->world : NULL;
 }
