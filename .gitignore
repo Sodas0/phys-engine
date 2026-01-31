@@ -2,8 +2,8 @@
 build/
 
 #binaries
-phys-engine
-phys-engine-sim
+engine
+sim
 
 # IDE
 .cursor/
