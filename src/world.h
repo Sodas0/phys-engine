@@ -9,6 +9,23 @@
 #define MAX_COLLISIONS 512    // Worst case: n*(n-1)/2 for 256 bodies
 #define SOLVER_ITERATIONS 6   // Tune: 4-8 typical for stable stacking
 
+// === UNIT SYSTEM ===
+// Scale: 100 pixels = 1 meter
+// - Positions/distances: pixels
+// - Velocities: pixels/second (multiply by PIXELS_PER_METER to get m/s)
+// - Accelerations: pixels/s^2 (multiply by PIXELS_PER_METER to get m/s^2)
+// - Mass: kilograms (kg)
+// - Time: seconds
+//
+// Example conversions:
+// - Window 1920x1080 pixels = 19.2m x 10.8m physical space
+// - Gravity 9.81 m/s^2 = 981 pixels/s^2
+// - Object radius 30 pixels = 0.30m (basketball-sized)
+// - Velocity 200 pixels/s = 2.0 m/s
+#define PIXELS_PER_METER 100.0f
+#define GRAVITY_EARTH_MS2 9.81f  // Standard Earth gravity in m/s^2
+#define GRAVITY_EARTH_PX (GRAVITY_EARTH_MS2 * PIXELS_PER_METER)  // 981 pixels/s^2
+
 // Debug visualization flags
 typedef struct {
     int show_velocity;         // Draw velocity vectors
@@ -19,15 +36,15 @@ typedef struct {
 typedef struct {
     Body bodies[MAX_BODIES];
     int body_count;
-    Vec2 gravity;
-    float dt;  // Fixed timestep
+    Vec2 gravity;            // Gravity acceleration in pixels/s² (e.g., [0, 981.0] for Earth)
+    float dt;                // Fixed timestep in seconds (e.g., 0.016667 for 60 Hz)
 
     // Optional: index of body used as actuator (e.g. fulcrum beam). -1 if none.
     int actuator_body_index;
     // Pivot position for the actuator (where it stays when no fulcrum base). Set at load from actuator body position.
     Vec2 actuator_pivot;
 
-    // World boundaries (for constraining bodies)
+    // World boundaries in pixels (for constraining bodies)
     float bound_left;
     float bound_right;
     float bound_top;

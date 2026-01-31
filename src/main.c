@@ -6,13 +6,25 @@
 #include "scene.h"
 #include "vec2.h"
 
+// === UNIT SYSTEM QUICK REFERENCE ===
+// Scale: 100 pixels = 1 meter
+// - Gravity: 981.0 px/s² = 9.81 m/s² (Earth standard)
+// - Position: pixels (1920×1080 screen = 19.2m × 10.8m room)
+// - Velocity: pixels/s (200 px/s = 2.0 m/s jogging speed)
+// - Mass: kilograms (1.0 kg typical, 0 = static)
+// - Time: seconds (dt = 0.016667 = 60 Hz)
+// See UNITS.md for full documentation
+
 // Window dimensions [im using 1920x1080 cause 1440p 240hz oled makes sim look amazing]
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
 
-// Actuator control --simple beam for now
-#define BEAM_ANGLE_SPEED  0.005f
-#define BEAM_ANGLE_MAX    0.5f
+// Simulator-owned fixed timestep (seconds). Scenes do not specify dt.
+#define SIM_DT  (1.0f / 120.0f)   // 120 Hz
+
+// Actuator control -- simple beam for now
+#define BEAM_ANGLE_SPEED  1.5f   // radians per second
+#define BEAM_ANGLE_MAX    0.5f   // max tilt in radians (~28 degrees)
 
 static void apply_actuator_pose(World *world, float angle) {
     if (world->actuator_body_index < 0) return;
@@ -53,13 +65,14 @@ int main(int argc, char *argv[]) {
 
     // === Load scene ===
     World world;
-    if (scene_load("scenes/stacking.json", &world) != 0) {
+    if (scene_load("scenes/fulcrum.json", &world) != 0) {
         fprintf(stderr, "Failed to load scene\n");
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
     }
+    world.dt = SIM_DT;  // Simulator owns dt; scenes do not set it
 
     float beam_angle = 0.0f;
 
@@ -67,26 +80,36 @@ int main(int argc, char *argv[]) {
     world.debug.show_velocity = 1;   // See velocity vectors
     world.debug.show_contacts = 1;   // See rect-rect contact points, normals, penetration
 
+    // Frame timing: run physics at the rate specified by world.dt
+    // Convert dt (seconds) to milliseconds for SDL_Delay
+    Uint32 frame_time_ms = (Uint32)(world.dt * 1000.0f);
+    if (frame_time_ms < 1) frame_time_ms = 1;  // Minimum 1ms delay
+
     int running = 1;
     SDL_Event event;
     while (running) {
+        Uint64 frame_start = SDL_GetTicks64();
+        
         // kb control for scene reload
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = 0;
             if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_R) {
-                if (scene_load("scenes/stacking.json", &world) == 0) {
+                if (scene_load("scenes/fulcrum.json", &world) == 0) {
+                    world.dt = SIM_DT;
                     beam_angle = 0.0f;
                     world.debug.show_velocity = 0;
                     world.debug.show_contacts = 0;
+                    frame_time_ms = (Uint32)(world.dt * 1000.0f);
+                    if (frame_time_ms < 1) frame_time_ms = 1;
                 }
             }
         }
 
-        // kb control for actuator tilt
+        // kb control for actuator tilt (scale by dt for frame-rate independence)
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         if (world.actuator_body_index >= 0) {
-            if (keys[SDL_SCANCODE_A]) beam_angle -= BEAM_ANGLE_SPEED;
-            if (keys[SDL_SCANCODE_D]) beam_angle += BEAM_ANGLE_SPEED;
+            if (keys[SDL_SCANCODE_A]) beam_angle -= BEAM_ANGLE_SPEED * world.dt;
+            if (keys[SDL_SCANCODE_D]) beam_angle += BEAM_ANGLE_SPEED * world.dt;
             if (beam_angle > BEAM_ANGLE_MAX)  beam_angle = BEAM_ANGLE_MAX;
             if (beam_angle < -BEAM_ANGLE_MAX) beam_angle = -BEAM_ANGLE_MAX;
             apply_actuator_pose(&world, beam_angle);
@@ -105,7 +128,11 @@ int main(int argc, char *argv[]) {
 
         SDL_RenderPresent(renderer);
 
-        SDL_Delay(1);
+        // Frame timing: sleep to maintain real-time simulation
+        Uint64 elapsed = SDL_GetTicks64() - frame_start;
+        if (elapsed < frame_time_ms) {
+            SDL_Delay((Uint32)(frame_time_ms - elapsed));
+        }
     }
 
     SDL_DestroyRenderer(renderer);

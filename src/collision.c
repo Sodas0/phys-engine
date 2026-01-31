@@ -1,4 +1,5 @@
 #include "collision.h"
+#include "world.h"
 #include <math.h>
 
 // --- Positional Correction ---
@@ -41,8 +42,9 @@ void collision_resolve(Body *a, Body *b, Collision *col) {
     // Relative velocity along collision normal
     float vel_along_normal = vec2_dot(rel_vel, col->normal);
     
-    // contact threshold to prevent jitter from micro-corrections (need to tweak a bit)
-    const float REST_VEL_EPS = 5.0f;  // [pixels/sec] Used to avoid jitter -- i want to tweak a bit.
+    // REST_VEL_EPS: Resting contact threshold (0.05 m/s = 5 pixels/s)
+    // Prevents jitter from micro-corrections in stacked objects
+    const float REST_VEL_EPS = 0.05f * PIXELS_PER_METER;  // 5.0 pixels/sec
     
     // Early exit if bodies are separating or at rest
     if (vel_along_normal > -REST_VEL_EPS) {

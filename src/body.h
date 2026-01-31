@@ -25,16 +25,16 @@ typedef struct {
 } Shape;
 
 typedef struct Body {
-    Vec2 position;
-    Vec2 velocity;
+    Vec2 position;           // Position in pixels (world coordinates)
+    Vec2 velocity;           // Velocity in pixels/second
 
-    float mass;
-    float inv_mass;
-    float restitution;
+    float mass;              // Mass in kilograms (kg). 0 = static/infinite mass
+    float inv_mass;          // 1/mass for efficiency. 0 = static body
+    float restitution;       // Bounciness [0-1]. 0=no bounce, 1=perfect bounce
 
-    float angle;
-    float angular_velocity;
-    float inv_inertia;
+    float angle;             // Rotation angle in radians
+    float angular_velocity;  // Angular velocity in radians/second
+    float inv_inertia;       // 1/inertia for efficiency. 0 = static body
 
     Shape shape;
 

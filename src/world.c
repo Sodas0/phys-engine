@@ -79,7 +79,9 @@ static void integrate_bodies(World *w) {
 
 static void resolve_circle_vs_bounds(Body *b, float left, float top, float right, float bottom) {
     float radius = b->shape.circle.radius;
-    const float REST_VEL_EPS = 5.0f;  // pixels/sec - treat as resting below this
+    // REST_VEL_EPS: Resting contact threshold (0.05 m/s = 5 pixels/s)
+    // Bodies moving slower than this are treated as at rest to prevent jitter
+    const float REST_VEL_EPS = 0.05f * PIXELS_PER_METER;  // 5.0 pixels/sec
     
     // Left wall
     if (b->position.x - radius < left) {
@@ -217,7 +219,7 @@ static void resolve_rect_vs_bounds(Body *b, float left, float top, float right, 
         float vel_along_normal = vec2_dot(point_velocity, collision_normal);
         
         // Resting contact threshold to prevent jitter
-        const float REST_VEL_EPS = 5.0f;  // pixels/sec
+        const float REST_VEL_EPS = 0.05f * PIXELS_PER_METER;  // 5.0 pixels/sec (0.05 m/s)
         
         // Only resolve if moving into the boundary (not resting or separating)
         if (vel_along_normal < -REST_VEL_EPS) {

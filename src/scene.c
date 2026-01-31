@@ -82,12 +82,8 @@ static int parse_world_config(const cJSON *world_obj, World *world) {
         return -1;
     }
 
-    // Parse dt
-    cJSON *dt = cJSON_GetObjectItem(world_obj, "dt");
-    float timestep = 1.0f / 60.0f; // Default
-    if (dt && cJSON_IsNumber(dt)) {
-        timestep = (float)dt->valuedouble;
-    }
+    // dt is owned by the simulator; use default here, simulator overwrites after load
+    float timestep = 1.0f / 60.0f;
 
     // Initialize world
     world_init(world, grav, timestep);
@@ -249,7 +245,7 @@ int scene_load(const char *filepath, World *world) {
             return -1;
         }
     } else {
-        // Use defaults
+        // Use defaults (dt is simulator-owned; simulator overwrites after load)
         world_init(world, vec2(0, 98.1f), 1.0f / 60.0f);
     }
 
