@@ -8,28 +8,36 @@
 // Opaque environment handle
 typedef struct Env Env;
 
-// Observation dimension
-#define OBS_DIM 4
+// Observation dimension - must match simulator's observation space
+#define OBS_DIM SIM_OBS_DIM
+
+// Episode configuration
+#define MAX_EPISODE_STEPS 2400  // Time-limit for truncation
+
+// Compile-time check that Env and Simulator agree on observation dimension
+// This prevents silent memory corruption
+_Static_assert(OBS_DIM == SIM_OBS_DIM, "Env/Simulator observation dimension mismatch");
 
 // Action: torque in [-1, 1]
 typedef struct {
     float torque;  // Normalized torque command in range [-1, 1]
 } Action;
 
-// Observation: 4D state vector
-// data[0]: beam angle θ (radians)
-// data[1]: beam angular velocity θ̇ (rad/s)
-// data[2]: ball position along beam x, relative to beam center (pixels)
-// data[3]: ball velocity along beam ẋ, projected onto beam axis (pixels/s)
+// Observation: 4D state vector (semantics defined by Simulator)
+//   data[0]: beam angle θ (radians)
+//   data[1]: beam angular velocity θ̇ (rad/s)
+//   data[2]: ball position along beam x, relative to beam center (pixels)
+//   data[3]: ball velocity along beam ẋ, projected onto beam axis (pixels/s)
 typedef struct {
     float data[OBS_DIM];
 } Observation;
 
 // Result of stepping the environment
 typedef struct {
-    Observation obs;  // Current observation
-    float reward;     // Reward signal
-    int done;         // Episode termination flag (1 = done, 0 = continuing)
+    Observation obs;   // Current observation
+    float reward;      // Reward signal
+    int terminated;    // Task failure (ball fell off beam): 1 = failed, 0 = continuing
+    int truncated;     // Time limit reached: 1 = time's up, 0 = continuing
 } StepResult;
 
 // Create a new environment instance that wraps an existing simulator
@@ -43,13 +51,13 @@ void env_destroy(Env* env);
 
 // Reset environment to initial state
 // env: environment to reset
-// Returns: initial step result with observation, reward=0.0, done=0
+// Returns: initial step result with observation, reward=0.0, terminated=0, truncated=0
 StepResult env_reset(Env* env);
 
 // Step the environment forward by one timestep
 // env: environment to step
 // action: action to apply (torque in [-1, 1])
-// Returns: step result with observation, reward, and done flag
+// Returns: step result with observation, reward, terminated, and truncated flags
 StepResult env_step(Env* env, Action action);
 
 // Render the environment for debugging purposes (optional, disabled by default)

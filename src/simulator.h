@@ -4,6 +4,9 @@
 #include "world.h"
 #include <stdint.h>
 
+// Observation dimension: simulator is the single authority on state semantics
+#define SIM_OBS_DIM 4
+
 // Actuator state: provides realistic dynamics for beam control
 typedef struct {
     float angle;              // Current beam angle (radians)
@@ -27,5 +30,20 @@ void sim_step(Simulator* sim, float action);
 
 // Read-only access to world for rendering
 World* sim_get_world(Simulator* sim);
+
+// Observation accessor: extracts state vector from simulator
+// Computes 4D observation vector:
+//   obs_out[0]: beam angle θ (radians)
+//   obs_out[1]: beam angular velocity θ̇ (rad/s)
+//   obs_out[2]: ball position along beam x, relative to beam center (pixels)
+//   obs_out[3]: ball velocity along beam ẋ, projected onto beam axis (pixels/s)
+//
+// Coordinate assumptions (invariants):
+//   - Body.position is center of mass in world coordinates
+//   - Beam local x-axis is defined by beam->angle (rotated from world +x)
+//   - Ball is at body index 1 (hardcoded convention)
+//
+// obs_dim: size of obs_out buffer (must be >= SIM_OBS_DIM)
+void sim_get_observation(const Simulator* sim, float* obs_out, int obs_dim);
 
 #endif

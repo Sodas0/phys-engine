@@ -67,6 +67,11 @@ int main(int argc, char *argv[]) {
     // Enable rendering only if not headless
     env_set_render_enabled(env, !headless);
     
+    // Reset environment to get initial observation
+    StepResult result = env_reset(env);
+    printf("Initial observation: ball pos = (%.2f, %.2f)\n", 
+           result.obs.data[0], result.obs.data[1]);
+    
     // Timing variables (used differently for headless vs non-headless)
     Uint64 last_time = headless ? 0 : SDL_GetPerformanceCounter();
     float accumulator = 0.0f;
@@ -75,7 +80,8 @@ int main(int argc, char *argv[]) {
     int frame_count = 0;
     long long step_count = 0;  // Use long long to avoid overflow for large simulations
     float debug_timer = 0.0f;
-    const float DEBUG_PRINT_INTERVAL = 1.0f;  
+    const float DEBUG_PRINT_INTERVAL = 1.0f;
+    float total_reward = 0.0f;  // Track cumulative reward  
 
     int running = 1;
     SDL_Event event;
@@ -107,8 +113,11 @@ int main(int argc, char *argv[]) {
             while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) running = 0;
                 if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_R) {
-                    // Reset via environment API (not implemented yet, so use sim directly)
-                    sim_reset(sim);
+                    // Reset via environment API
+                    result = env_reset(env);
+                    total_reward = 0.0f;
+                    printf("Environment reset. Ball pos = (%.2f, %.2f)\n",
+                           result.obs.data[0], result.obs.data[1]);
                 }
             }
         }
@@ -123,24 +132,45 @@ int main(int argc, char *argv[]) {
 
         // Run physics steps as needed to catch up to real time
         while (accumulator >= SIM_DT) {
-            // Step via simulator (env_step not implemented yet)
-            sim_step(sim, action_value);
+            // Create action and step via environment API
+            Action action = { .torque = action_value };
+            result = env_step(env, action);
+            total_reward += result.reward;
+            
+            // Print per-step information with terminated/truncated flags
+            printf("Step %lld | Obs: [%.2f, %.2f, %.2f, %.2f] | Reward: %+.4f | Term: %d | Trunc: %d | Action: %+.3f\n",
+                   step_count,
+                   result.obs.data[0], result.obs.data[1], 
+                   result.obs.data[2], result.obs.data[3],
+                   result.reward, result.terminated, result.truncated, action_value);
+            
+            // Handle episode termination (failure or time limit)
+            if (result.terminated || result.truncated) {
+                const char* reason = result.terminated ? "TERMINATED (ball fell off)" : "TRUNCATED (time limit)";
+                printf("Episode ended: %s | Total reward: %+.2f | Steps: %lld\n", 
+                       reason, total_reward, step_count);
+                
+                // Auto-reset for continuous operation
+                result = env_reset(env);
+                total_reward = 0.0f;
+                printf("Environment auto-reset. Starting new episode.\n");
+            }
+            
             accumulator -= SIM_DT;
             step_count++;
         }
         
-        // Debug output: print actuator stats periodically
+        // Debug output: print actuator stats and env info periodically
         debug_timer += frame_time;
         frame_count++;
         if (debug_timer >= DEBUG_PRINT_INTERVAL) {
             float fps = frame_count / debug_timer;
             const char* mode = headless ? "Headless" : "Rendering";
-            printf("[%s] FPS: %.1f | Steps: %lld | Action: %+.3f | Angle: %+.4f rad (%.1f°) | AngVel: %+.4f rad/s\n",
+            printf("[%s] FPS: %.1f | Steps: %lld | Action: %+.3f | Ball pos: (%.1f, %.1f) | Reward: %+.3f | Total reward: %+.2f\n",
                    mode, fps, step_count,
                    action_value,
-                   sim->actuator.angle,
-                   sim->actuator.angle * 57.2958f,
-                   sim->actuator.angular_velocity);
+                   result.obs.data[0], result.obs.data[1],
+                   result.reward, total_reward);
             debug_timer = 0.0f;
             frame_count = 0;
         }

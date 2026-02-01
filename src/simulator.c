@@ -130,3 +130,67 @@ void sim_step(Simulator* sim, float action) {
 World* sim_get_world(Simulator* sim) {
     return sim ? &sim->world : NULL;
 }
+
+// Extract observation vector from simulator state
+void sim_get_observation(const Simulator* sim, float* obs_out, int obs_dim) {
+    // Validate inputs
+    if (!sim || !obs_out || obs_dim < SIM_OBS_DIM) {
+        // Safety: zero out buffer on error
+        if (obs_out && obs_dim > 0) {
+            for (int i = 0; i < obs_dim; i++) {
+                obs_out[i] = 0.0f;
+            }
+        }
+        return;
+    }
+    
+    // Get beam (actuator) body
+    const Body* beam = world_get_body((World*)&sim->world, sim->world.actuator_body_index);
+    if (!beam) {
+        // Zero out on error
+        for (int i = 0; i < SIM_OBS_DIM; i++) {
+            obs_out[i] = 0.0f;
+        }
+        return;
+    }
+    
+    // TODO: figure out design for not hardcoding ball body index.
+    // Get ball body (hardcoded convention: ball is body 1)
+    const int BALL_BODY_INDEX = 1;
+    const Body* ball = world_get_body((World*)&sim->world, BALL_BODY_INDEX);
+    if (!ball) {
+        // Zero out on error
+        for (int i = 0; i < SIM_OBS_DIM; i++) {
+            obs_out[i] = 0.0f;
+        }
+        return;
+    }
+    
+    // Extract actuator state
+    float beam_angle = sim->actuator.angle;
+    float beam_angular_velocity = sim->actuator.angular_velocity;
+    
+    // Cache trig for projection (optimization for hot loop)
+    float c = cosf(beam_angle);
+    float s = sinf(beam_angle);
+    
+    // Compute vector from beam center to ball center (both in world coordinates)
+    // Invariant: Body.position is center of mass in world coordinates
+    float dx = ball->position.x - beam->position.x;
+    float dy = ball->position.y - beam->position.y;
+    
+    // Project onto beam's local x-axis
+    // Beam local x-axis in world coords: [cos(θ), sin(θ)]
+    // This gives ball position along beam, relative to the beam's center
+    float x_along_beam = dx * c + dy * s;
+    
+    // Project ball velocity onto beam axis
+    // This gives ball velocity along beam in beam's local frame
+    float vel_along_beam = ball->velocity.x * c + ball->velocity.y * s;
+    
+    // Write observation vector
+    obs_out[0] = beam_angle;              // beam angle θ (radians)
+    obs_out[1] = beam_angular_velocity;   // beam angular velocity θ̇ (rad/s)
+    obs_out[2] = x_along_beam;            // ball position along beam (pixels)
+    obs_out[3] = vel_along_beam;          // ball velocity along beam (pixels/s)
+}
