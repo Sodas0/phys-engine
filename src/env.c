@@ -127,8 +127,8 @@ StepResult env_step(Env* env, Action action) {
                 result.terminated = 1;
                 result.truncated = 0;
                 
-                // Terminal penalty for failure
-                result.reward = -1.0f;
+                // Terminal penalty for failure (large to discourage)
+                result.reward = -10.0f;
                 
                 return result;
             }
@@ -145,11 +145,13 @@ StepResult env_step(Env* env, Action action) {
         // Reward is computed from state below
     }
     
-    // --- Reward Shaping (continuous, not terminal) ---
-    // Reward encourages: small beam angle and ball near beam center
-    // This applies to all non-failure states (including truncation)
+    // --- Reward Shaping (survival + balance) ---
+    // Primary: survival bonus for staying alive
+    // Secondary: small penalties for poor balance (shaping)
     if (!result.terminated) {
-        result.reward = -fabsf(x_along_beam) * 0.01f - fabsf(beam_angle) * 0.1f;
+        result.reward = 1.0f  // Survival bonus
+                      - fabsf(beam_angle) * 0.1f         // Angle penalty
+                      - fabsf(x_along_beam) * 0.001f;    // Position penalty
     }
     
     return result;

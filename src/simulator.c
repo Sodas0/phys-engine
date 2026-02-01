@@ -18,8 +18,8 @@
 
 // Initial-state randomization parameters for learning
 // These ranges force immediate corrective control while keeping all states recoverable
-#define RANDOMIZE_BALL_POSITION_RATIO 0.2f   // ±20% of beam half-length
-#define RANDOMIZE_BEAM_ANGLE_RAD 0.349f      // ±20 degrees (≈ ±0.349 radians)
+#define RANDOMIZE_BALL_POSITION_RATIO 0.1f   // ±10% of beam half-length (easier start)
+#define RANDOMIZE_BEAM_ANGLE_RAD 0.175f      // ±10 degrees (≈ ±0.175 radians)
 
 // Helper: apply actuator pose (matches main.c logic exactly)
 static void apply_actuator_pose(World *world, float angle) {
