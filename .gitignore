@@ -6,6 +6,7 @@ sim
 *.zip
 .cache/
 .clangd
+tensorboard_logs/
 
 # IDE
 .cursor/
