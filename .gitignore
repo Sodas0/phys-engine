@@ -1,11 +1,11 @@
-# Build artifacts
 build/
-
-#binaries
 engine
 sim
 *.so
 *.pt
+*.zip
+.cache/
+.clangd
 
 # IDE
 .cursor/
@@ -14,5 +14,3 @@ sim
 # OS
 .DS_Store
 
-.cache/
-.clangd
