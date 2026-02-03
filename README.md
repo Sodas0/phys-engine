@@ -1,9 +1,12 @@
-# phys-engine
+# RL Physics Environment rl-phys-eng
 
 A 2D physics engine written in C with SDL2 rendering.
 
-My goal with this project is to use this as a physics engine for elementary RL training exerices. The current state has full capability to leverage this engine as a sandbox for training agents on classic control tasks like ball balancing. 
+A deterministic 2D physics-based environment written in C, with SDL2 rendering, designed for experimenting with continuous-control reinforcement learning.
 
+This project was built as a minimal sandbox for training RL agents on classic control tasks using physics-based dynamics rather than kinematic shortcuts. The engine supports fixed–time-step simulation, first-order actuator dynamics, and a clean step/reset interface suitable for PPO-style training.
+
+The current implementation demonstrates stable learning on tasks such as ball-and-beam balancing, serving as a controlled environment for studying the interaction between physics, control, and learning.
 
 ## Demos
 
